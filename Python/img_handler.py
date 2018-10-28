@@ -1,4 +1,4 @@
-import  img_handler_functions as imf
+from Python import img_handler_functions as imf
 
 # Service directory:
 tmp = "./TMP"
@@ -17,8 +17,13 @@ image_list = imf.get_image_list(path)
 # Create service directory:
 imf.create_directory(tmp)
 
-for image in image_list:
-    imf.slice(image, 3, tmp, save=True)
+image_list = list(map(lambda x: imf.enchance(x, 30), image_list))
+
+image_list = list(map(lambda x: imf.wite_image(x, image_list.index(x), tmp), image_list))
+
+imf.create_pdf(tmp, path)
+
+imf.delete_directory(tmp)
 
 # Delete service directory:
-imf.delete_directory(tmp)
+# imf.delete_directory(tmp)

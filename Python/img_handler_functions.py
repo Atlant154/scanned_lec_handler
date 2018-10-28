@@ -1,6 +1,8 @@
-import numpy as np
-import os
+from PIL import ImageEnhance as ench
 from PIL import Image
+import shutil
+import img2pdf
+import os
 
 SUCCESS = '\033[92m' + "[Success]" + '\033[0m'
 INFO = '\033[94m' + "[Info]" + '\033[0m'
@@ -12,12 +14,12 @@ image_ext = [".png", ".jpg", "jpeg"]
 
 def get_image_list(dir):
     dir_files = [f for f in os.listdir(dir) if os.path.isfile(f)]
-    result = np.array([])
+    result = []
     try:
         for filename in dir_files:
             if filename.endswith(tuple(image_ext)):
-                result = np.append(result, filename)
-    except result.size == 0:
+                result.append(Image.open(filename))
+    except result == 0:
         print(ERROR + "There are not matching files in the directory!")
         exit(1)
     else:
@@ -27,7 +29,8 @@ def get_image_list(dir):
 
 def create_directory(path):
     try:
-        os.mkdir(path)
+        if not os.path.exists(path):
+            os.mkdir(path)
     except OSError:
         print(ERROR + "Creation of the service directory failed!")
         exit(1)
@@ -37,7 +40,7 @@ def create_directory(path):
 
 def delete_directory(path):
     try:
-        os.rmdir(path)
+        shutil.rmtree(path, ignore_errors=True)
     except OSError:
         print(ERROR + "Deletion of the service directory failed!")
         exit(1)
@@ -45,24 +48,19 @@ def delete_directory(path):
         print(INFO + "The service directory successfully deleted!")
 
 
-def is_valid_greeting(greeting_num, image):
-    try:
-        greeting_num = int(greeting_num)
-    except:
-        raise ValueError("Number of slice couldn't be cast to integer!")
-
-    im_w, im_h = image.size
-
-    try:
-        im_h < greeting_num
-    except:
-        raise AssertionError("Number of greeting more than image resolution!")
-
-    return True
+def enchance(image, percent):
+    coeff = (percent / 100.0) + 1.0
+    enchancer = ench.Contrast(image)
+    enh = enchancer.enhance(coeff)
+    return enh
 
 
-def slice(image, greeting, save_path="./", save=False):
-    im = Image.open(image)
+def wite_image(image, number, path):
+    image.save(path + "/" + "scan_" + str(number) + ".png", "PNG")
+    return image
 
-    is_valid_greeting(greeting, im)
 
+def create_pdf(sources_path, result_path):
+    pdf_bytes = img2pdf.convert([sources_path + "/" + i for i in os.listdir(sources_path) if i.endswith(".png")])
+    result_file = open(result_path + "/uncompressed.pdf", "wb")
+    result_file.write(pdf_bytes)

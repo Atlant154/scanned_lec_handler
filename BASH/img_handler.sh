@@ -45,7 +45,7 @@ echo "$INFO[info] Images cropped!$NC"
 
 for image in *.png; do
 	{
-		convert  $image -transparent white -quality 0 "${image%.png}.jp2" && rm ./$image
+		convert  $image -transparent white -alpha remove -alpha off -quality 0 "${image%.png}.jp2" && rm ./$image
 	} || {
 		echo "$ERR[Error] Conversion error!$NC"
 		cd ..
