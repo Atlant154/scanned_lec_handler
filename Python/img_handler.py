@@ -6,24 +6,28 @@ tmp = "./TMP"
 # Target directory:
 path = './'
 
-print(imf.INFO + "Supported formats: " + str(imf.image_ext));
+# Init script:
+imf.script_init()
 
-print(imf.SUCCESS + "Script is running!")
-
-print(imf.INFO + "Start scanning the directory!")
-
-image_list = imf.get_image_list(path)
+# Get list of images:
+image_list = imf.get_image_list(dir=path)
 
 # Create service directory:
 imf.create_directory(tmp)
 
-image_list = list(map(lambda x: imf.enchance(x, 30), image_list))
+# Enhance images:
+image_list = list(map(lambda x: imf.enchance(image=x), image_list))
 
-image_list = list(map(lambda x: imf.wite_image(x, image_list.index(x), tmp), image_list))
+if image_list:
+    # Writing images in service directory:
+    image_list = list(map(lambda x: imf.wite_image(image=x, number=image_list.index(x), path=tmp), image_list))
+    # Creating PDF:
+    imf.create_pdf(sources_path=tmp, result_path=path)
+else:
+    print(imf.WARNING + "No file to make PDF!")
 
-imf.create_pdf(tmp, path)
+# Deleting service directory:
+imf.delete_directory(path=tmp)
 
-imf.delete_directory(tmp)
-
-# Delete service directory:
-# imf.delete_directory(tmp)
+# Compress sources to archive:
+imf.compress_files(path=path)
