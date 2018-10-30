@@ -3,7 +3,6 @@ from PIL import Image
 import img2pdf
 import zipfile
 import shutil
-import math
 import gc
 import os
 
@@ -16,7 +15,7 @@ image_ext = [".png", ".jpg", "jpeg"]
 
 
 def script_init():
-    print(INFO + "Supported formats: " + str(image_ext));
+    print(INFO + "Supported formats: " + str(image_ext))
     print(SUCCESS + "Script is running!")
 
 
@@ -31,7 +30,7 @@ def get_image_list(dir):
         print(ERROR + "There are not matching files in the directory!")
         exit(1)
     else:
-        print(INFO + "Scan complete. There are " + str(len(result)) + " matching files in the directory.")
+        print(SUCCESS + "Scan complete. There are " + str(len(result)) + " matching files in the directory.")
         return result
 
 
@@ -44,7 +43,7 @@ def create_directory(path):
         print(ERROR + "Creation of the service directory failed!")
         exit(1)
     else:
-        print(INFO + "Service directory was created!")
+        print(SUCCESS + "Service directory was created!")
 
 
 def delete_directory(path):
@@ -54,12 +53,11 @@ def delete_directory(path):
         print(ERROR + "Deletion of the service directory failed!")
         exit(1)
     else:
-        print(INFO + "The service directory successfully deleted!")
+        print(SUCCESS + "The service directory successfully deleted!")
 
 
 def enhance(image, contrast=2.0, color=0.0, brightness=1.0, shape=2.0):
     try:
-        print(image.filename)
         # Color enhance:
         enhancer = ench.Color(image)
         enhanced = enhancer.enhance(color)
@@ -76,14 +74,19 @@ def enhance(image, contrast=2.0, color=0.0, brightness=1.0, shape=2.0):
     except:
         print(ERROR + "Enhance error!")
         shutil.rmtree("./TMP", ignore_errors=True)
-        # exit(1)
+        exit(1)
     else:
+        image.close()
         gc.collect()
         return enhanced
 
 
 def wite_image(image, path):
-    image.save(path + "/" + image.filename, "PNG")
+    filename = image.filename
+    filename = filename.split('/')
+    filename = filename[-1]
+    image.save(path + "/" +filename, "PNG")
+    image.close()
     return image
 
 
@@ -98,48 +101,43 @@ def create_pdf(sources_path, result_path):
 
 
 def compress_files(path):
-    archive_name = "image_archive.zip"
+    archive_name = 'image_archive.zip'
+    images = [f for f in os.listdir(path) if os.path.isfile(f) and f.endswith(tuple(image_ext))]
     print(INFO + "Start creating archive!")
     try:
-        archive = zipfile.ZipFile(archive_name, "w")
-        for dirname, subdirs, files in os.walk(path):
-            for filename in files:
-                if filename.endswith(tuple(image_ext)):
-                    archive.write(os.path.join(dirname, filename))
+        source_arcive = zipfile.ZipFile(archive_name, 'w')
+        for image in images:
+            source_arcive.write(image)
+        source_arcive.close()
     except:
         print(ERROR + "Creating archive error!")
-        os.remove("./Images.zip")
+        os.remove(path + archive_name)
     else:
-        print(SUCCESS + "Image archive created!")
-        print(INFO + "Start deleting images")
-        try:
-            list_dir = os.listdir(path)
-            for file in list_dir:
-                if file.endswith(tuple(image_ext)):
-                    os.remove(os.path.join(path, file))
-        except:
-            print(ERROR + "Images removing error!")
-        else:
-            print(SUCCESS + "Images removed!")
-
-def enum(iter, start=1):
-    n = start
-    for i in iter:
-        yield n, i
-        n += 1
+        print(SUCCESS + "Sources compressed. Files: " + str(len(images)) + ".")
 
 
-def slice_image(image, slice_num=2):
+def remove_sources(path):
+    images = [path + f for f in os.listdir(path) if os.path.isfile(f) and f.endswith(tuple(image_ext))]
+    print(INFO + "Start deleting sources!")
+    try:
+        for image in images:
+            os.remove(image)
+    except:
+        print(ERROR + "Removing sources error!")
+    else:
+        print(SUCCESS + "Sources removed. Files: " + str(len(images)) + ".")
+
+
+def slice_image(image, path, slice_umber=2):
     wight, height = image.size
-
-    upper = 0
-
-    slices = int(math.ceil(height / slice_num))
-
-    for i,slice in enum(range(slice_num)):
-        left = 0;
-        upper = upper
-        if i == slice_num:
-            lower = height
-        else:
-            lower = int(i)
+    if height <= slice_umber:
+        print(ERROR + "Image height greater than slice number!")
+        return None
+    h = int(height / slice_umber)
+    for iter in range(0, slice_umber):
+        cropped_up = iter * h
+        result_image = image.crop((0, cropped_up, wight, cropped_up + h))
+        result_image.filename = "cropped_" + image.filename[2:-4] + "_" + str(iter) + ".png"
+        wite_image(image=result_image, path=path)
+        result_image.close()
+    image.close()
