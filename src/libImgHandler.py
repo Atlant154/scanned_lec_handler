@@ -11,7 +11,7 @@ INFO = '\033[94m' + "[Info]" + '\033[0m'
 WARNING = '\033[93m' + "[Warning]" + '\033[0m'
 ERROR = '\033[91m' + "[Error]" + '\033[0m'
 
-image_ext = [".png", ".jpg", "jpeg"]
+image_ext = [".png"]
 
 
 def script_init():
@@ -85,7 +85,6 @@ def wite_image(image, path):
     filename = filename.split('/')
     filename = filename[-1]
     image.save(path + "/" + filename, "PNG")
-    image.close()
     return image
 
 
@@ -135,11 +134,11 @@ def get_scanline_median(scanline, number):
         (R, G, B) = iter
         mid += (R + G + B)
 
-    mid = float(mid) / n
+    mid = float(mid) / (n + 1)
     return (float(mid), number)
 
 
-def slice_image(image, path, slice_umber=2):
+def slice_image(image, slice_umber=2):
     deviation_coefficient = 0.2
 
     wight, height = image.size
@@ -158,6 +157,8 @@ def slice_image(image, path, slice_umber=2):
 
     pixel_matrix = image.load()
 
+    results = []
+
     for iter in range(0, math.ceil(slice_umber + slice_umber * deviation_coefficient)):
         scanlines = []
         if up + h + deviation < height:
@@ -172,10 +173,10 @@ def slice_image(image, path, slice_umber=2):
 
         result_image = image.crop((left, up, right, bottom))
         result_image.filename = "cropped_" + image.filename[2:-4] + "_" + str(iter) + ".png"
-        wite_image(image=result_image, path=path)
-        result_image.close()
+        results.append(result_image)
         up = bottom
         if up >= height:
             break
 
     image.close()
+    return results
