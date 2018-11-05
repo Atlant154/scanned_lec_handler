@@ -2,7 +2,7 @@
 
 ![logo](doc/logo.png)
 
-Realization of scripts allowing to make color correction, cropping and packing in PDF of scanned lectures.
+The implementation of the script allows for color correction, cropping and packing in PDF.
 
 ## Main functions
 
