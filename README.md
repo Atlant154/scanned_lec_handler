@@ -2,24 +2,24 @@
 
 ![logo](doc/logo.png)
 
-Script for bash linux. It is placed in the directory with scans, it is launched, after which it will produce color correction, slice into slides(divide scan in half), convert it into `jp2`, pack it into PDF, optimally compress PDF, pack the used scans into the `zip` archive.
+Realization of scripts allowing to make color correction, cropping and packing in PDF of scanned lectures.
+
+## Main functions
+
+1. Color correction.
+Color correction is made using the library Pillow. The following parameters are adjusted: color, brightness, contrast, sharpness. The preset values give good results on scanned images.
+2. Image splitting.
+To get the slide suitable for viewing from mobile devices used to split the image vertically. Since the geometric division can divide the text on a line, a smart algorithm has been implemented: a white line is automatically found between the text and the division occurs according to it.
+At the moment, when splitting into more than two parts, the result may be incorrect.
 
 ## Requirements
 
-### Critical
+1. [Python 3.*](https://www.python.org/downloads/): img2pdf, zipfile, shutil, math, os.
+2. [Pillow](https://pillow.readthedocs.io/en/5.3.x/).
 
-1. [ImageMagick](https://www.imagemagick.org/script/index.php).
-2. [img2pdf](https://github.com/josch/img2pdf).
+## How to run
 
-### Non-critical
-
-1. [ps2pdf](https://www.ghostscript.com/doc/current/Ps2pdf.htm).
-2. zip
-
-### How to install dependencies
-
-You can install all dependencies using command: `sudo apt install ImageMagicl img2pdf ps2pdf zip`
-
-## How to
-
-Place the script in a directory with cropped and rotated scans, note that the file name should not contain spaces. Run the script, wait for the end. If you do not want to delete the uncompressed version of PDF or compress the photos - comment out the relevant lines in the script.
+1. Clone the repo: `gir clone https://github.com/Atlant154/scanned_lec_handler.git`
+2. Place photos in `.png` format in a directory with `img_handler.py` script.
+3. Comment out or change the lines in the `img_handler.py` if necessary.
+4. Run the script by you interpreter.
