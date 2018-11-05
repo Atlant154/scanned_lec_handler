@@ -3,7 +3,7 @@ from PIL import Image
 import img2pdf
 import zipfile
 import shutil
-import gc
+import math
 import os
 
 SUCCESS = '\033[92m' + "[Success]" + '\033[0m'
@@ -77,7 +77,6 @@ def enhance(image, contrast=2.0, color=0.0, brightness=1.0, shape=2.0):
         exit(1)
     else:
         image.close()
-        gc.collect()
         return enhanced
 
 
@@ -85,7 +84,7 @@ def wite_image(image, path):
     filename = image.filename
     filename = filename.split('/')
     filename = filename[-1]
-    image.save(path + "/" +filename, "PNG")
+    image.save(path + "/" + filename, "PNG")
     image.close()
     return image
 
@@ -112,6 +111,7 @@ def compress_files(path):
     except:
         print(ERROR + "Creating archive error!")
         os.remove(path + archive_name)
+        exit(1)
     else:
         print(SUCCESS + "Sources compressed. Files: " + str(len(images)) + ".")
 
@@ -128,16 +128,54 @@ def remove_sources(path):
         print(SUCCESS + "Sources removed. Files: " + str(len(images)) + ".")
 
 
+def get_scanline_median(scanline, number):
+    n = len(scanline)
+    mid = 0.0
+    for iter in scanline:
+        (R, G, B) = iter
+        mid += (R + G + B)
+
+    mid = float(mid) / n
+    return (float(mid), number)
+
+
 def slice_image(image, path, slice_umber=2):
+    deviation_coefficient = 0.2
+
     wight, height = image.size
+
     if height <= slice_umber:
         print(ERROR + "Image height greater than slice number!")
         return None
-    h = int(height / slice_umber)
-    for iter in range(0, slice_umber):
-        cropped_up = iter * h
-        result_image = image.crop((0, cropped_up, wight, cropped_up + h))
+
+    h = math.ceil(height / slice_umber)
+
+    deviation = int(h * deviation_coefficient)
+
+    up = 0
+    right = wight
+    left = 0
+
+    pixel_matrix = image.load()
+
+    for iter in range(0, math.ceil(slice_umber + slice_umber * deviation_coefficient)):
+        scanlines = []
+        if up + h + deviation < height:
+            for row in range(up + h - deviation, up + h + deviation):
+                tempy = [pixel_matrix[column_iter, row] for column_iter in range(left, right)]
+                scanlines.append(get_scanline_median(tempy, row))
+
+            max_scanline = max(scanlines, key=lambda item: item[0])[1]
+            bottom = up + max_scanline
+        else:
+            bottom = height
+
+        result_image = image.crop((left, up, right, bottom))
         result_image.filename = "cropped_" + image.filename[2:-4] + "_" + str(iter) + ".png"
         wite_image(image=result_image, path=path)
         result_image.close()
+        up = bottom
+        if up >= height:
+            break
+
     image.close()
