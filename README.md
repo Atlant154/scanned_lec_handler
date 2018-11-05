@@ -7,9 +7,12 @@ The implementation of the script allows for color correction, cropping and packi
 ## Main features
 
 1. **Color correction.**  
-Color correction is made using the Pillow library. The following parameters are adjusted: color, brightness, contrast, sharpness. The preset values give good results on scanned images.
+Color correction is made using the Pillow library. The following parameters are adjusted: color, brightness, contrast, sharpness.
+The preset values give good results on scanned images.
 2. **Image splitting.**  
-To obtain a format of images suitable for viewing on mobile devices, vertical separation of the slide was used. Due to the fact that a simple separation may violate content, an algorithm for smart cropping has been implemented. The line with the most white pixels is determined and being used as a cropping line
+To obtain a format of images suitable for viewing on mobile devices, vertical separation of the slide was used.
+Due to the fact that a simple separation may violate content, an algorithm for smart cropping has been implemented.
+The line with the most white pixels is determined and being used as a cropping line.  
 At the moment, when splitting into more than two parts, the result may be incorrect.
 
 ## Requirements
